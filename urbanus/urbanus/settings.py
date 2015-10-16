@@ -23,6 +23,7 @@ with open(SECRETS_FILE, "r") as handle:
     secrets = json.loads(handle.read())
 
 GOOGLE_MAPS_KEY = secrets['google-maps-key']
+DATABASE_FILE_PATH = os.path.join(BASE_DIR, "..", "..", secrets['database_file'])
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'urbanus (+http://www.yourdomain.com)'

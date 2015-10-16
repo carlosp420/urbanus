@@ -13,8 +13,11 @@ class UrbaniaSpider(scrapy.Spider):
     allowed_domains = ["urbania.pe"]
 
     def start_requests(self):
-        url = 'http://urbania.pe/alquiler-de-departamentos-en-peru'
-        return [scrapy.Request(url, callback=self.extract_pagination)]
+        urls = [
+            'http://urbania.pe/alquiler-de-departamentos-en-san-borja--lima',
+            'http://urbania.pe/alquiler-de-departamentos-en-santiago-de-surco--lima',
+        ]
+        return [scrapy.Request(url, callback=self.extract_pagination) for url in urls]
 
     def extract_pagination(self, response):
         pages = []
