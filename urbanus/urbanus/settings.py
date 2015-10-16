@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+import os
 
 # Scrapy settings for urbanus project
 #
@@ -14,6 +16,13 @@ BOT_NAME = 'urbanus'
 SPIDER_MODULES = ['urbanus.spiders']
 NEWSPIDER_MODULE = 'urbanus.spiders'
 
+BASE_DIR = os.path.dirname(__file__)
+SECRETS_FILE = os.path.join(BASE_DIR, "..", "..", "config.json")
+
+with open(SECRETS_FILE, "r") as handle:
+    secrets = json.loads(handle.read())
+
+GOOGLE_MAPS_KEY = secrets['google-maps-key']
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'urbanus (+http://www.yourdomain.com)'
@@ -61,9 +70,9 @@ NEWSPIDER_MODULE = 'urbanus.spiders'
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'urbanus.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'urbanus.pipelines.UrbanusPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

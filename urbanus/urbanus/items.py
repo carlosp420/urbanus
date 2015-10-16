@@ -15,15 +15,41 @@ class UrbanusItem(scrapy.Item):
         input_processor=MapCompose(remove_tags),
         output_processor=TakeFirst(),
     )
-    address = scrapy.Field()
+    address = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
     photos = scrapy.Field()
-    bedrooms = scrapy.Field()
-    area = scrapy.Field()
-    bathrooms = scrapy.Field()
-    garage = scrapy.Field()
-    description = scrapy.Field()
-    price_soles = scrapy.Field()
-    price_dollars = scrapy.Field()
+    bedrooms = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    area_total = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    area_constructed = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    bathrooms = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    garage = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    description = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
+    price = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+        output_processor=TakeFirst(),
+    )
     latitude = scrapy.Field()
     longitude = scrapy.Field()
-    url = scrapy.Field()
+    url = scrapy.Field(
+        output_processor=TakeFirst(),
+    )

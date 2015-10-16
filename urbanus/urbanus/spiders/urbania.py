@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
 import re
 
 import scrapy
@@ -40,5 +41,39 @@ class UrbaniaSpider(scrapy.Spider):
         l.add_xpath('title', "//section[1]/div/div[2]/div[1]/h1")
         l.add_xpath('address', "//section[2]/div/div/p")
         l.add_xpath('photos', "//div[contains(@class, 'slide_gale')]/span/img/@src")
-        # properties "//div[3]/div[2]/div[1]/div[3]/div[2]/ul/li/
+        l.add_value('url', response.url)
+
+        properties = extract_properties(response)
+        l.add_value('bedrooms', properties.bedrooms)
+        l.add_value('bathrooms', properties.bathrooms)
+        l.add_value('area_total', properties.area_total)
+        l.add_value('area_constructed', properties.area_constructed)
+        l.add_value('garage', properties.garage)
+
+        l.add_css('price', "span.inmueble_price")
+        l.add_css('description', "div.show_detail")
+
         return l.load_item()
+
+
+def extract_properties(response):
+    Properties = namedtuple('Properties', ['bedrooms', 'area_total', 'area_constructed',
+                            'bathrooms', 'garage'])
+    bedrooms = ""
+    area_total = ""
+    area_constructed = ""
+    bathrooms = ""
+    garage = ""
+
+    for sel in response.xpath("//div[3]/div[2]/div[1]/div[3]/div[2]/ul/li"):
+        if sel.xpath("./span/text()").extract_first().lower() == 'dormitorios':
+            bedrooms = sel.xpath("./p/text()").extract_first()
+        elif sel.xpath("./span/text()").extract_first().lower() == u'baños':
+            bathrooms = sel.xpath("./p/text()").extract_first()
+        elif sel.xpath("./span/text()").extract_first().lower() == u'área total':
+            area_total = sel.xpath("./p/text()").extract_first()
+        elif sel.xpath("./span/text()").extract_first().lower() == u'área construida':
+            area_constructed = sel.xpath("./p/text()").extract_first()
+        elif sel.xpath("./span/text()").extract_first().lower() == 'cochera':
+            garage = sel.xpath("./p/text()").extract_first()
+    return Properties(bedrooms, area_total, area_constructed, bathrooms, garage)
