@@ -50,6 +50,7 @@ class UrbanusItem(scrapy.Item):
     )
     latitude = scrapy.Field()
     longitude = scrapy.Field()
+    distance_to_metro = scrapy.Field()
     url = scrapy.Field(
         output_processor=TakeFirst(),
     )

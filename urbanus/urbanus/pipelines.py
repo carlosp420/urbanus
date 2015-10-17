@@ -4,32 +4,32 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import json
+import os
 import re
 
 import googlemaps
 from scrapy.exceptions import DropItem
 
 from urbanus.settings import GOOGLE_MAPS_KEY
+from urbanus.settings import BASE_DIR
 from urbanus.models import db_connect
 
 
 class UrbanusPipeline(object):
+    def __init__(self):
+        self.gmaps = googlemaps.Client(key=GOOGLE_MAPS_KEY)
+        with open(os.path.join(BASE_DIR, '..', '..', 'metro_stations.json'), "r") as handle:
+            self.stations = json.loads(handle.read())
+
     def process_item(self, item, spider):
         if spider.name == "urbania":
-            gmaps = googlemaps.Client(key=GOOGLE_MAPS_KEY)
-
             if 'address' in item:
-                updated_address = u'{0}, Lima, Peru'.format(item['address'])
+                lat, long = self._do_geocoding(item)
+                item['latitude'] = lat
+                item['longitude'] = long
 
-                if _is_geocode_in_db(item['address']):
-                    item['latitude'], item['longitude'] = _get_geocoding(item['address'])
-                else:
-                    geocoded_list = gmaps.geocode(updated_address)
-                    if geocoded_list:
-                        geocoded = geocoded_list[0]
-                        item['latitude'] = geocoded['geometry']['location']['lat']
-                        item['longitude'] = geocoded['geometry']['location']['lng']
-                        _save_geocoding(item['address'], item['latitude'], item['longitude'])
+                # item['distance_to_metro'] = self._get_distance_to_metro(item)
 
                 if item['description']:
                     item['description'] = item['description'].strip()
@@ -42,8 +42,40 @@ class UrbanusPipeline(object):
                 return item
             else:
                 raise DropItem("Not address given")
-
         return item
+
+    def _do_geocoding(self, item):
+        updated_address = u'{0}, Lima, Peru'.format(item['address'])
+        if _is_geocode_in_db(item['address']):
+            return _get_geocoding(item['address'])
+        else:
+            geocoded_list = self.gmaps.geocode(updated_address)
+            if geocoded_list:
+                geocoded = geocoded_list[0]
+                _save_geocoding(item['address'], item['latitude'], item['longitude'])
+                lat = geocoded['geometry']['location']['lat']
+                long = geocoded['geometry']['location']['lng']
+                return lat, long
+
+    def _get_distance_to_metro(self, item):
+        distances = []
+        for station in self.stations:
+            orig = '{0},{1}'.format(item['latitude'], item['longitude'])
+            dest = '{0},{1}'.format(station['lat'], station['long'])
+            directions = self.gmaps.directions(orig, dest, mode='walking')
+
+            if directions:
+                for direction in directions:
+                    legs = direction['legs']
+                    for leg in legs:
+                        distance = leg['distance']['value']
+                        distances.append(distance)
+        if distances:
+            shortest_distance = sorted(distances)[0]
+        else:
+            shortest_distance = 99999999
+        return shortest_distance
+
 
 
 def _is_geocode_in_db(address):

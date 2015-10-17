@@ -1,0 +1,4 @@
+Scrapy==1.0.3
+googlemaps==2.3
+dataset==0.6.1
+pandas==0.17.0
