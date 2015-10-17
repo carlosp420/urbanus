@@ -36,6 +36,9 @@ class UrbanusPipeline(object):
 
                 if item['price']:
                     item['price'] = _convert_price_to_soles(item['price'])
+
+                if 'area_constructed' in item:
+                    item['area_constructed'] = _remove_meters(item['area_constructed'])
                 return item
             else:
                 raise DropItem("Not address given")
@@ -81,3 +84,11 @@ def _convert_price_to_soles(price):
     else:
         price_soles = 0
     return price_soles
+
+
+def _remove_meters(area):
+    if 'm' in area.lower():
+        res = re.search('([0-9]+)', area)
+        if res:
+            return res.groups()[0]
+    return None
